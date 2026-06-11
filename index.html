@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>KASKU BUSINESS - ERP Mini</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <div class="header" id="mainHeader">
+            <div class="header-top">
+                <div class="logo-text">KASKU BUSINESS</div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+                    <button class="icon-btn" onclick="showPage('settings')">⚙️</button>
+                </div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">Total Saldo</div>
+                <div class="balance-amount" id="totalBalance">Rp 0</div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+            <div class="stats-grid" style="margin-top:16px;">
+                <div class="stat-card" onclick="showPage('finance')">
+                    <div class="stat-icon income">📥</div>
+                    <div class="stat-label">Pemasukan</div>
+                    <div class="stat-value income" id="dashIncome">Rp 0</div>
+                </div>
+                <div class="stat-card" onclick="showPage('finance')">
+                    <div class="stat-icon expense">📤</div>
+                    <div class="stat-label">Pengeluaran</div>
+                    <div class="stat-value expense" id="dashExpense">Rp 0</div>
+                </div>
+                <div class="stat-card" onclick="showPage('debt')">
+                    <div class="stat-icon debt">💳</div>
+                    <div class="stat-label">Hutang</div>
+                    <div class="stat-value debt" id="dashDebt">Rp 0</div>
+                </div>
+                <div class="stat-card" onclick="showPage('receivable')">
+                    <div class="stat-icon receivable">💰</div>
+                    <div class="stat-label">Piutang</div>
+                    <div class="stat-value receivable" id="dashReceivable">Rp 0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Menu Cepat</div>
+                <div class="menu-grid">
+                    <div class="menu-item" onclick="showPage('finance')"><div class="menu-icon">💵</div><div class="menu-label">Keuangan</div></div>
+                    <div class="menu-item" onclick="showPage('wallet')"><div class="menu-icon">💳</div><div class="menu-label">Dompet</div></div>
+                    <div class="menu-item" onclick="showPage('invoice')"><div class="menu-icon">📄</div><div class="menu-label">Invoice</div></div>
+                    <div class="menu-item" onclick="showPage('customer')"><div class="menu-icon">👥</div><div class="menu-label">Pelanggan</div></div>
+                    <div class="menu-item" onclick="showPage('products')"><div class="menu-icon">📦</div><div class="menu-label">Produk</div></div>
+                    <div class="menu-item" onclick="showPage('debt')"><div class="menu-icon">💳</div><div class="menu-label">Hutang</div></div>
+                    <div class="menu-item" onclick="showPage('receivable')"><div class="menu-icon">💰</div><div class="menu-label">Piutang</div></div>
+                    <div class="menu-item" onclick="showPage('reports')"><div class="menu-icon">📊</div><div class="menu-label">Laporan</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Ringkasan Bulan Ini</div>
+                <div class="report-item"><span class="report-label">Pendapatan</span><span class="report-value positive" id="monthIncome">Rp 0</span></div>
+                <div class="report-item"><span class="report-label">Pengeluaran</span><span class="report-value negative" id="monthExpense">Rp 0</span></div>
+                <div class="report-item"><span class="report-label">Laba Bersih</span><span class="report-value" id="monthProfit">Rp 0</span></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Invoice</div>
+                <div class="report-item"><span class="report-label">Lunas</span><span class="report-value positive" id="invoicePaid">0</span></div>
+                <div class="report-item"><span class="report-label">Belum Lunas</span><span class="report-value negative" id="invoiceUnpaid">0</span></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Grafik Keuangan 7 Hari</div>
+                <div class="chart-container" id="financeChart"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Aktivitas Terbaru</div>
+                <div id="recentActivity"></div>
+            </div>
+            <div style="height:20px"></div>
+        </div>
+
+        <!-- KEUANGAN -->
+        <div class="page" id="page-finance">
+            <div class="tabs">
+                <button class="tab active" onclick="switchFinanceTab('income')">Pemasukan</button>
+                <button class="tab" onclick="switchFinanceTab('expense')">Pengeluaran</button>
+            </div>
+            <div id="finance-income"><div id="incomeList"></div></div>
+            <div id="finance-expense" style="display:none;"><div id="expenseList"></div></div>
+            <button class="fab" onclick="openTransactionModal()">+</button>
+        </div>
+
+        <!-- DOMPET -->
+        <div class="page" id="page-wallet">
+            <div class="wallet-list" id="walletList"></div>
+            <div class="card"><button class="btn btn-primary" onclick="openWalletModal()">+ Tambah Dompet</button></div>
+            <div style="height:20px"></div>
+        </div>
+
+        <!-- INVOICE -->
+        <div class="page" id="page-invoice">
+            <div class="tabs">
+                <button class="tab active" onclick="switchInvoiceTab('all')">Semua</button>
+                <button class="tab" onclick="switchInvoiceTab('unpaid')">Belum Lunas</button>
+                <button class="tab" onclick="switchInvoiceTab('paid')">Lunas</button>
+            </div>
+            <div id="invoiceList"></div>
+            <button class="fab" onclick="openInvoiceTypeModal()">+</button>
+        </div>
+
+        <!-- PELANGGAN -->
+        <div class="page" id="page-customer">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="customerSearch" placeholder="Cari pelanggan..." oninput="renderCustomers()">
+            </div>
+            <div id="customerList"></div>
+            <button class="fab" onclick="openCustomerModal()">+</button>
+        </div>
+
+        <!-- PRODUK -->
+        <div class="page" id="page-products">
+            <div class="tabs">
+                <button class="tab active" onclick="switchProductTab('service')">Jasa</button>
+                <button class="tab" onclick="switchProductTab('product')">Barang</button>
+            </div>
+            <div id="productList"></div>
+            <button class="fab" onclick="openProductModal()">+</button>
+        </div>
+
+        <!-- HUTANG -->
+        <div class="page" id="page-debt">
+            <div id="debtList"></div>
+            <button class="fab" onclick="openDebtModal()">+</button>
+        </div>
+
+        <!-- PIUTANG -->
+        <div class="page" id="page-receivable">
+            <div id="receivableList"></div>
+            <button class="fab" onclick="openReceivableModal()">+</button>
+        </div>
+
+        <!-- LAPORAN -->
+        <div class="page" id="page-reports">
+            <div class="tabs">
+                <button class="tab active" onclick="switchReportTab('daily')">Harian</button>
+                <button class="tab" onclick="switchReportTab('weekly')">Mingguan</button>
+                <button class="tab" onclick="switchReportTab('monthly')">Bulanan</button>
+                <button class="tab" onclick="switchReportTab('yearly')">Tahunan</button>
+            </div>
+            <div id="reportContent"></div>
+        </div>
+
+        <!-- PENGATURAN -->
+        <div class="page" id="page-settings">
+            <div class="card">
+                <div class="card-title">Profil Usaha</div>
+                <div class="form-group"><label class="form-label">Nama Usaha</label><input type="text" class="form-input" id="settingBusinessName" value="KASKU BUSINESS"></div>
+                <div class="form-group"><label class="form-label">Nomor WhatsApp</label><input type="text" class="form-input" id="settingWhatsApp" value="085217706587"></div>
+                <div class="form-group"><label class="form-label">Alamat Usaha</label><textarea class="form-textarea" id="settingAddress">Jl. Contoh No. 123, Jakarta</textarea></div>
+                <button class="btn btn-primary" onclick="saveSettings()">Simpan Pengaturan</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Tampilan</div>
+                <div class="toggle"><span>Mode Gelap</span><div class="toggle-switch" id="darkModeToggle" onclick="toggleTheme()"></div></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Data</div>
+                <button class="btn btn-outline" onclick="exportData()" style="margin-bottom:10px">📥 Export Data (JSON)</button>
+                <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="margin-bottom:10px">📤 Import Data</button>
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+                <button class="btn btn-danger" onclick="resetData()">🗑️ Reset Semua Data</button>
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">🏠</span><span class="nav-label">Beranda</span></button>
+            <button class="nav-item" onclick="showPage('wallet')"><span class="nav-icon">💳</span><span class="nav-label">Dompet</span></button>
+            <button class="nav-item" onclick="showPage('invoice')"><span class="nav-icon">📄</span><span class="nav-label">Invoice</span></button>
+            <button class="nav-item" onclick="showPage('finance')"><span class="nav-icon">💵</span><span class="nav-label">Keuangan</span></button>
+            <button class="nav-item" onclick="showPage('reports')"><span class="nav-icon">📊</span><span class="nav-label">Laporan</span></button>
+        </nav>
+
+        <!-- MODAL: Transaksi -->
+        <div class="modal-overlay" id="transactionModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title" id="transactionModalTitle">Tambah Transaksi</span>
+                    <button class="modal-close" onclick="closeModal('transactionModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="tabs">
+                        <button class="tab active" onclick="setTransactionType('income')">Pemasukan</button>
+                        <button class="tab" onclick="setTransactionType('expense')">Pengeluaran</button>
+                    </div>
+                    <input type="hidden" id="transactionId">
+                    <input type="hidden" id="transactionType" value="income">
+                    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="transactionDate"></div>
+                    <div class="form-group"><label class="form-label">Kategori</label><select class="form-select" id="transactionCategory"></select></div>
+                    <div class="form-group"><label class="form-label">Keterangan</label><input type="text" class="form-input" id="transactionDesc" placeholder="Keterangan transaksi"></div>
+                    <div class="form-group"><label class="form-label">Nominal (Rp)</label><input type="number" class="form-input" id="transactionAmount" placeholder="0"></div>
+                    <div class="form-group"><label class="form-label">Dompet</label><select class="form-select" id="transactionWallet"></select></div>
+                    <button class="btn btn-primary" onclick="saveTransaction()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Dompet -->
+        <div class="modal-overlay" id="walletModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title" id="walletModalTitle">Tambah Dompet</span><button class="modal-close" onclick="closeModal('walletModal')">✕</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="walletId">
+                    <div class="form-group"><label class="form-label">Nama Dompet</label><input type="text" class="form-input" id="walletName" placeholder="Nama dompet"></div>
+                    <div class="form-group"><label class="form-label">Icon</label><select class="form-select" id="walletIcon"><option value="🏦">🏦 Bank</option><option value="💳">💳 Kartu</option><option value="💵">💵 Tunai</option><option value="📱">📱 E-Wallet</option></select></div>
+                    <button class="btn btn-primary" onclick="saveWallet()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Transfer -->
+        <div class="modal-overlay" id="transferModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title">Transfer Antar Dompet</span><button class="modal-close" onclick="closeModal('transferModal')">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-group"><label class="form-label">Dari Dompet</label><select class="form-select" id="transferFrom"></select></div>
+                    <div class="transfer-arrow">⬇️</div>
+                    <div class="form-group"><label class="form-label">Ke Dompet</label><select class="form-select" id="transferTo"></select></div>
+                    <div class="form-group"><label class="form-label">Nominal (Rp)</label><input type="number" class="form-input" id="transferAmount" placeholder="0"></div>
+                    <div class="form-group"><label class="form-label">Keterangan</label><input type="text" class="form-input" id="transferDesc" placeholder="Keterangan transfer"></div>
+                    <button class="btn btn-primary" onclick="saveTransfer()">Transfer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Pelanggan -->
+        <div class="modal-overlay" id="customerModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title" id="customerModalTitle">Tambah Pelanggan</span><button class="modal-close" onclick="closeModal('customerModal')">✕</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="customerId">
+                    <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="customerName" placeholder="Nama pelanggan"></div>
+                    <div class="form-group"><label class="form-label">Nomor HP</label><input type="text" class="form-input" id="customerPhone" placeholder="08xxxxxxxxxx"></div>
+                    <div class="form-group"><label class="form-label">Alamat</label><textarea class="form-textarea" id="customerAddress" placeholder="Alamat lengkap"></textarea></div>
+                    <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="customerNote" placeholder="Catatan tambahan"></textarea></div>
+                    <button class="btn btn-primary" onclick="saveCustomer()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Produk -->
+        <div class="modal-overlay" id="productModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title" id="productModalTitle">Tambah Item</span><button class="modal-close" onclick="closeModal('productModal')">✕</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="productId"><input type="hidden" id="productType" value="service">
+                    <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="productName" placeholder="Nama produk/jasa"></div>
+                    <div class="form-group"><label class="form-label">Kategori</label><select class="form-select" id="productCategory"><option value="Percetakan">Percetakan</option><option value="Laptop">Laptop</option></select></div>
+                    <div class="form-group"><label class="form-label">Harga (Rp)</label><input type="number" class="form-input" id="productPrice" placeholder="0"></div>
+                    <button class="btn btn-primary" onclick="saveProduct()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Hutang -->
+        <div class="modal-overlay" id="debtModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title" id="debtModalTitle">Tambah Hutang</span><button class="modal-close" onclick="closeModal('debtModal')">✕</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="debtId">
+                    <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="debtName" placeholder="Nama pemberi hutang"></div>
+                    <div class="form-group"><label class="form-label">Nomor HP</label><input type="text" class="form-input" id="debtPhone" placeholder="08xxxxxxxxxx"></div>
+                    <div class="form-group"><label class="form-label">Nominal (Rp)</label><input type="number" class="form-input" id="debtAmount" placeholder="0"></div>
+                    <div class="form-group"><label class="form-label">Keterangan</label><input type="text" class="form-input" id="debtDesc" placeholder="Keterangan"></div>
+                    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="debtDate"></div>
+                    <div class="form-group"><label class="form-label">Jatuh Tempo</label><input type="date" class="form-input" id="debtDue"></div>
+                    <button class="btn btn-primary" onclick="saveDebt()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Piutang -->
+        <div class="modal-overlay" id="receivableModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title" id="receivableModalTitle">Tambah Piutang</span><button class="modal-close" onclick="closeModal('receivableModal')">✕</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="receivableId">
+                    <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="receivableName" placeholder="Nama peminjam"></div>
+                    <div class="form-group"><label class="form-label">Nomor HP</label><input type="text" class="form-input" id="receivablePhone" placeholder="08xxxxxxxxxx"></div>
+                    <div class="form-group"><label class="form-label">Nominal (Rp)</label><input type="number" class="form-input" id="receivableAmount" placeholder="0"></div>
+                    <div class="form-group"><label class="form-label">Keterangan</label><input type="text" class="form-input" id="receivableDesc" placeholder="Keterangan"></div>
+                    <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="receivableDate"></div>
+                    <div class="form-group"><label class="form-label">Jatuh Tempo</label><input type="date" class="form-input" id="receivableDue"></div>
+                    <button class="btn btn-primary" onclick="saveReceivable()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Pilih Jenis Invoice -->
+        <div class="modal-overlay" id="invoiceTypeModal">
+            <div class="modal">
+                <div class="modal-header"><span class="modal-title">Pilih Jenis Invoice</span><button class="modal-close" onclick="closeModal('invoiceTypeModal')">✕</button></div>
+                <div class="modal-body">
+                    <button class="btn btn-primary" onclick="openInvoiceModal('print')" style="margin-bottom:12px">📚 Percetakan Buku</button>
+                    <button class="btn btn-primary" onclick="openInvoiceModal('laptop')">💻 Laptop Bekas</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Invoice -->
+        <div class="modal-overlay" id="invoiceModal">
+            <div class="modal" style="max-height:95vh">
+                <div class="modal-header"><span class="modal-title" id="invoiceModalTitle">Invoice Baru</span><button class="modal-close" onclick="closeModal('invoiceModal')">✕</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="invoiceId"><input type="hidden" id="invoiceType" value="print">
+                    <div class="form-group"><label class="form-label">Pelanggan</label><select class="form-select" id="invoiceCustomer" onchange="fillCustomerData()"><option value="">Pilih Pelanggan</option></select></div>
+                    <div class="form-group"><label class="form-label">Nama</label><input type="text" class="form-input" id="invoiceCustomerName"></div>
+                    <div class="form-group"><label class="form-label">Nomor HP</label><input type="text" class="form-input" id="invoiceCustomerPhone"></div>
+                    <div class="form-group"><label class="form-label">Alamat</label><textarea class="form-textarea" id="invoiceCustomerAddress"></textarea></div>
+
+                    <div id="printSpecs">
+                        <div class="card-title" style="margin-top:20px">Spesifikasi Buku</div>
+                        <div class="form-group"><label class="form-label">Ukuran Buku</label><input type="text" class="form-input" id="printBookSize" placeholder="A4, A5, dll"></div>
+                        <div class="form-group"><label class="form-label">Jenis Jilid</label><select class="form-select" id="printBinding"><option value="Lem Panas">Lem Panas</option><option value="Spiral">Spiral</option></select></div>
+                        <div class="form-group"><label class="form-label">Ukuran Buku Jadi</label><input type="text" class="form-input" id="printFinalSize" placeholder="21 x 29.7 cm"></div>
+                        <div class="form-group"><label class="form-label">Jenis Kertas Isi</label><input type="text" class="form-input" id="printPaperType" placeholder="HVS 70gr"></div>
+                        <div class="form-group"><label class="form-label">Jenis Kertas Cover</label><input type="text" class="form-input" id="printCoverType" placeholder="Art Carton 260gr"></div>
+                        <div class="form-group"><label class="form-label">Laminating</label><select class="form-select" id="printLaminating"><option value="Tidak">Tidak</option><option value="Glossy">Glossy</option><option value="Doff">Doff</option></select></div>
+                        <div class="form-group"><label class="form-label">Wrapping</label><select class="form-select" id="printWrapping"><option value="Tidak">Tidak</option><option value="Ya">Ya</option></select></div>
+                    </div>
+
+                    <div id="laptopSpecs" style="display:none">
+                        <div class="card-title" style="margin-top:20px">Spesifikasi Laptop</div>
+                        <div class="form-group"><label class="form-label">Nama Laptop</label><input type="text" class="form-input" id="laptopName" placeholder="ASUS VivoBook"></div>
+                        <div class="form-group"><label class="form-label">Processor</label><input type="text" class="form-input" id="laptopProcessor" placeholder="Intel Core i5"></div>
+                        <div class="form-group"><label class="form-label">RAM</label><input type="text" class="form-input" id="laptopRam" placeholder="8GB DDR4"></div>
+                        <div class="form-group"><label class="form-label">Penyimpanan</label><input type="text" class="form-input" id="laptopStorage" placeholder="256GB SSD"></div>
+                        <div class="form-group"><label class="form-label">Ukuran Layar</label><input type="text" class="form-input" id="laptopScreen" placeholder="14 inch"></div>
+                        <div class="form-group"><label class="form-label">Kondisi</label><select class="form-select" id="laptopCondition"><option value="Like New">Like New</option><option value="Baik">Baik</option><option value="Cukup">Cukup</option></select></div>
+                        <div class="form-group"><label class="form-label">Garansi</label><input type="text" class="form-input" id="laptopWarranty" placeholder="1 Bulan"></div>
+                    </div>
+
+                    <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-textarea" id="invoiceNote"></textarea></div>
+
+                    <div class="card-title" style="margin-top:20px">Daftar Item</div>
+                    <div id="invoiceItems"></div>
+                    <button class="btn btn-outline" onclick="addInvoiceItem()" style="margin:10px 0">+ Tambah Item</button>
+
+                    <div class="card-title" style="margin-top:20px">Pembayaran</div>
+                    <div class="form-group"><label class="form-label">Total</label><input type="number" class="form-input" id="invoiceTotal" readonly></div>
+                    <div class="form-group"><label class="form-label">DP (Uang Muka)</label><input type="number" class="form-input" id="invoiceDP" value="0" onchange="calculateInvoiceTotal()"></div>
+                    <div class="form-group"><label class="form-label">Sisa</label><input type="number" class="form-input" id="invoiceRemaining" readonly></div>
+                    <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="invoiceStatus"><option value="Belum Lunas">Belum Lunas</option><option value="DP">DP</option><option value="Lunas">Lunas</option></select></div>
+                    <div class="form-group"><label class="form-label">Dompet Penerima</label><select class="form-select" id="invoiceWallet"></select></div>
+                    <button class="btn btn-primary" onclick="saveInvoice()">Simpan Invoice</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Detail Invoice -->
+        <div class="modal-overlay" id="invoiceDetailModal">
+            <div class="modal" style="max-height:95vh;overflow-y:auto">
+                <div class="modal-header no-print"><span class="modal-title">Detail Invoice</span><button class="modal-close" onclick="closeModal('invoiceDetailModal')">✕</button></div>
+                <div class="modal-body" id="invoiceDetailContent"></div>
+                <div class="modal-body no-print" style="padding-top:0">
+                    <button class="btn btn-primary" onclick="printInvoice()" style="margin-bottom:10px">🖨️ Cetak / Simpan PDF</button>
+                    <button class="btn btn-success" onclick="sendWhatsAppInvoice()" style="margin-bottom:10px">📱 Kirim WhatsApp</button>
+                    <button class="btn btn-outline" onclick="editCurrentInvoice()">✏️ Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/modules.js"></script>
+</body>
+</html>
